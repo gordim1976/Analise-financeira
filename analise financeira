@@ -1,73 +1,48 @@
 import tkinter as tk
 import yfinance as yf
-import pandas as pd
-from sklearn.linear_model import LinearRegression
+import numpy as np
+from sklearn.preprocessing import StandardScaler
+from sklearn.neural_network import MLPRegressor
 
 def coletar_dados(ativo, data_inicio, data_fim):
-    # Utilize a API do Yahoo Finance para obter os dados históricos do ativo
     dados = yf.download(ativo, start=data_inicio, end=data_fim, progress=False)
     return dados
 
 def treinar_modelo(dados):
-    # Separe os dados em X (features) e y (target)
     X = dados[['Open', 'High', 'Low', 'Close', 'Volume']]
     y = dados['Close']
 
-    # Crie o modelo de regressão linear
-    modelo = LinearRegression()
+    scaler = StandardScaler()
+    X_scaled = scaler.fit_transform(X)
 
-    # Treine o modelo com os dados históricos
-    modelo.fit(X, y)
+    modelo = MLPRegressor(hidden_layer_sizes=(100, 100), max_iter=1000)
+    modelo.fit(X_scaled, y)
 
-    return modelo
+    return modelo, scaler
 
-def fazer_previsao(modelo, dados):
-    # Utilize o modelo treinado para fazer as previsões futuras
-    # Aqui você pode definir um período futuro para a previsão
-    previsao = modelo.predict(dados[['Open', 'High', 'Low', 'Close', 'Volume']])
-    return previsao[-1]  # Retorna apenas o último valor da previsão
+def fazer_previsao(modelo, scaler, dados):
+    X = dados[['Open', 'High', 'Low', 'Close', 'Volume']]
+    X_scaled = scaler.transform(X)
+    previsao = modelo.predict(X_scaled)
+    return previsao
 
 def iniciar_analises():
-    # Obter as informações do usuário
     ativo = ativo_entry.get()
     data_inicio = data_inicio_entry.get()
     data_fim = data_fim_entry.get()
 
-    # Coletar os dados históricos do ativo
     dados = coletar_dados(ativo, data_inicio, data_fim)
+    modelo, scaler = treinar_modelo(dados)
+    previsao = fazer_previsao(modelo, scaler, dados)
 
-    # Treinar o modelo de aprendizado de máquina
-    modelo = treinar_modelo(dados)
+    resultado_label.config(text=f"Previsão Futura: {previsao}")
 
-    # Fazer as previsões futuras com base no modelo treinado
-    previsao = fazer_previsao(modelo, dados)
-
-    # Exibir os resultados das análises na interface gráfica
-    exibir_resultados(dados, previsao)
-
-def exibir_resultados(dados, previsao):
-    # Criar uma tabela com os dados históricos do ativo
-    tabela = pd.DataFrame(dados)
-
-    # Limpar a janela antes de exibir os resultados
-    resultado_text.config(state=tk.NORMAL)
-    resultado_text.delete(1.0, tk.END)
-
-    # Exibir os dados históricos em uma tabela
-    resultado_text.insert(tk.END, "Dados Históricos:\n")
-    resultado_text.insert(tk.END, tabela.to_string() + "\n\n")
-
-    # Exibir a previsão futura
-    resultado_text.insert(tk.END, f"Previsão Futura: {previsao:.2f}")
-
-    # Desabilitar a edição da caixa de texto
-    resultado_text.config(state=tk.DISABLED)
-
-# Crie a janela principal
 root = tk.Tk()
 root.title("App de Análise Financeira")
 
-# Crie os campos para entrada de informações
+titulo_label = tk.Label(root, text="Bem-vindo ao App de Análise Financeira", font=("Arial", 16))
+titulo_label.pack(pady=20)
+
 ativo_label = tk.Label(root, text="Digite o código do ativo:")
 ativo_label.pack()
 ativo_entry = tk.Entry(root)
@@ -83,74 +58,33 @@ data_fim_label.pack()
 data_fim_entry = tk.Entry(root)
 data_fim_entry.pack()
 
-# Crie um botão para iniciar as análises futuras
 botao_analise = tk.Button(root, text="Iniciar Análises Futuras", command=iniciar_analises)
 botao_analise.pack()
 
-# Crie uma caixa de texto para exibir os resultados
-resultado_text = tk.Text(root, width=80, height=20, state=tk.DISABLED)
-resultado_text.pack()
+resultado_label = tk.Label(root, text="", font=("Arial", 12))
+resultado_label.pack(pady=20)
 
 root.mainloop()
 
-import tkinter as tk
-import yfinance as yf
-import numpy as np
-import tensorflow as tf
-from sklearn.preprocessing import MinMaxScaler
-
-# Resto do código (definir funções e layout da interface gráfica)
-
-def treinar_rede_neural(dados):
-    # Separe os dados em X (features) e y (target)
-    X = dados[['Open', 'High', 'Low', 'Close', 'Volume']]
-    y = dados['Close']
-
-    # Normalizar os dados para melhor desempenho da rede neural
-    scaler = MinMaxScaler()
-    X_scaled = scaler.fit_transform(X)
-    y_scaled = scaler.transform(y.values.reshape(-1, 1))
-
-    # Criar o modelo da rede neural
-    model = tf.keras.models.Sequential([
-        tf.keras.layers.Dense(64, activation='relu', input_shape=(5,)),
-        tf.keras.layers.Dense(32, activation='relu'),
-        tf.keras.layers.Dense(1)
-    ])
-
-    # Compilar o modelo
-    model.compile(optimizer='adam', loss='mean_squared_error')
-
-    # Treinar o modelo com os dados históricos normalizados
-    model.fit(X_scaled, y_scaled, epochs=100, batch_size=32)
-
-    return model
-
-def fazer_previsao_rede_neural(model, dados):
-    # Utilize o modelo treinado para fazer as previsões futuras
-    X = dados[['Open', 'High', 'Low', 'Close', 'Volume']]
+from machine_learning.rede_neural import Rede_Neural
 
 
-    X_scaled = scaler.transform(X)
-    previsao_scaled = model.predict(X_scaled)
-    previsao = scaler.inverse_transform(previsao_scaled)
-    return previsao
 
-def iniciar_analises():
-    # Coletar os dados históricos do Mini índice
-    dados = coletar_dados()
 
-    # Treinar o modelo de regressão linear
-    modelo_linear = treinar_modelo(dados)
+# Criar uma instância da classe RedeNeural com o formato dos dados de entrada
+rede = Rede_Neural(input_shape=(5,))
 
-    # Fazer as previsões futuras com base no modelo de regressão linear
-    previsao_linear = fazer_previsao(modelo_linear, dados)
 
-    # Treinar a rede neural
-    modelo_rede_neural = treinar_rede_neural(dados)
+# Criar uma instância da classe Rede_Neural
+rede_neural = Rede_Neural()
 
-    # Fazer as previsões futuras com base na rede neural
-    previsao_rede_neural = fazer_previsao_rede_neural(modelo_rede_neural, dados)
+# Dados de treino e teste
+X_treino = ...  # Dados de treino
+y_treino = ...  # Valores alvo dos dados de treino
+X_teste = ...   # Dados de teste
 
-    # Exibir os resultados das análises na interface gráfica
-    resultado_label.config(text=f"Previsão Linear: {previsao_linear}\nPrevisão Rede Neural: {previsao_rede_neural}")
+# Treinar a rede neural com os dados de treino
+rede_neural.treinar(X_treino, y_treino)
+
+# Fazer previsões com a rede neural utilizando os dados de teste
+previsoes = rede_neural.fazer_previsao(X_teste)
