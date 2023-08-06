@@ -1,4 +1,6 @@
 import tkinter as tk
+import pandas as pd
+
 import yfinance as yf
 import numpy as np
 from sklearn.preprocessing import StandardScaler
@@ -121,3 +123,34 @@ previsoes = rede_neural.fazer_previsao(X_teste)
 print(previsoes)
 
 from machine_learning.rede_neural import RedeNeural
+
+import pandas as pd
+
+# ...
+
+def exibir_resultados(previsoes):
+    data = {'Previsões': previsoes}
+    df = pd.DataFrame(data)
+    print(df)
+
+# ...
+
+# Fazer previsões com a rede neural utilizando os dados de teste
+previsoes = rede_neural.fazer_previsao(X_teste)
+
+# Exibir os resultados em uma tabela
+exibir_resultados(previsoes)
+
+import pandas as pd
+
+def exibir_resultados(previsoes):
+    df = pd.DataFrame({'Previsões': previsoes})
+    print(df)
+
+# Fazer previsões com a rede neural utilizando os dados de teste
+previsoes = rede_neural.fazer_previsao(X_teste)
+
+# Exibir os resultados em uma tabela
+exibir_resultados(previsoes)
+
+import pandas as pd
