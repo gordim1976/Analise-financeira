@@ -88,3 +88,36 @@ rede_neural.treinar(X_treino, y_treino)
 
 # Fazer previsões com a rede neural utilizando os dados de teste
 previsoes = rede_neural.fazer_previsao(X_teste)
+
+from machine_learning.rede_neural import Rede_Neural
+
+import yfinance as yf
+
+# Definir o símbolo do dólar (USD/BRL)
+simbolo_dolar = 'USDBRL=X'
+
+# Definir as datas de início e fim para obter os dados históricos
+data_inicio = '2022-01-01'
+data_fim = '2022-12-31'
+
+# Obter os dados históricos do dólar do Yahoo Finance
+dados_dolar = yf.download(simbolo_dolar, start=data_inicio, end=data_fim)
+
+# Preparar os dados para a rede neural
+X_treino = dados_dolar[['Open', 'High', 'Low', 'Close', 'Volume']].values
+y_treino = dados_dolar['Close'].shift(-1).dropna().values
+X_teste = [dados_dolar.iloc[-1][['Open', 'High', 'Low', 'Close', 'Volume']].values]
+
+# Criar uma instância da classe RedeNeural
+rede_neural = RedeNeural()
+
+# Treinar a rede neural com os dados de treino
+rede_neural.treinar(X_treino, y_treino)
+
+# Fazer previsões com a rede neural utilizando os dados de teste
+previsoes = rede_neural.fazer_previsao(X_teste)
+
+# Imprimir as previsões
+print(previsoes)
+
+from machine_learning.rede_neural import RedeNeural
