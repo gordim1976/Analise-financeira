@@ -1,0 +1,182 @@
+import tkinter as tk
+import yfinance as yf
+import pandas as pd
+from sklearn.linear_model import LinearRegression
+from tkcalendar import DateEntry
+
+def coletar_dados(ativo, data_inicio, data_fim):
+    # Utilize a API do Yahoo Finance para obter os dados históricos do ativo
+    dados = yf.download(ativo, start=data_inicio, end=data_fim, progress=False)
+    return dados
+
+def treinar_modelo(dados):
+    # Separe os dados em X (features) e y (target)
+    X = dados[['Open', 'High', 'Low', 'Close', 'Volume']]
+    y = dados['Close']
+
+    # Crie o modelo de regressão linear
+    modelo = LinearRegression()
+
+    # Treine o modelo com os dados históricos
+    modelo.fit(X, y)
+
+    return modelo
+
+def fazer_previsao(modelo, dados):
+    # Utilize o modelo treinado para fazer as previsões futuras
+    # Aqui você pode definir um período futuro para a previsão
+    previsao = modelo.predict(dados[['Open', 'High', 'Low', 'Close', 'Volume']])
+    return previsao
+
+def iniciar_analises():
+    ativo = ativo_entry.get()  # Obter o código do ativo digitado pelo usuário
+    data_inicio = data_inicio_entry.get_date()  # Obter a data de início selecionada pelo usuário
+    data_fim = data_fim_entry.get_date()  # Obter a data de fim selecionada pelo usuário
+
+    # Coletar os dados históricos do ativo e filtrar por data
+    dados = coletar_dados(ativo, data_inicio, data_fim)
+
+    # Treinar o modelo de aprendizado de máquina
+    modelo = treinar_modelo(dados)
+
+    # Fazer as previsões futuras com base no modelo treinado
+    previsao = fazer_previsao(modelo, dados)
+
+    # Exibir os resultados das análises na interface gráfica
+    resultado_label.config(text=f"Previsão Futura: {previsao}")
+
+# Crie a janela principal
+root = tk.Tk()
+root.title("App de Análise Financeira")
+
+# Crie um rótulo para exibir o título do aplicativo
+titulo_label = tk.Label(root, text="Bem-vindo ao App de Análise Financeira", font=("Arial", 16))
+titulo_label.pack(pady=20)
+
+# Crie um campo de entrada para o usuário digitar o código do ativo
+ativo_label = tk.Label(root, text="Digite o código do ativo:")
+ativo_label.pack()
+ativo_entry = tk.Entry(root)
+ativo_entry.pack()
+
+# Crie campos de entrada para o usuário selecionar a data de início e fim da análise
+data_inicio_label = tk.Label(root, text="Selecione a data de início:")
+data_inicio_label.pack()
+data_inicio_entry = DateEntry(root, date_pattern='dd/mm/yyyy')
+data_inicio_entry.pack()
+
+data_fim_label = tk.Label(root, text="Selecione a data de fim:")
+data_fim_label.pack()
+data_fim_entry = DateEntry(root, date_pattern='dd/mm/yyyy')
+data_fim_entry.pack()
+
+# Crie um botão para iniciar as análises futuras
+botao_analise = tk.Button(root, text="Iniciar Análises Futuras", command=iniciar_analises)
+botao_analise.pack()
+
+# Crie um rótulo para exibir o resultado das análises futuras
+resultado_label = tk.Label(root, text="", font=("Arial", 12))
+resultado_label.pack(pady=20)
+
+root.mainloop()
+import tkinter as tk
+import yfinance as yf
+import numpy as np
+import tensorflow as tf
+
+# Restante do código do aplicativo...
+
+def treinar_rede_neural(dados):
+    # Separe os dados em X (features) e y (target)
+    X = dados[['Open', 'High', 'Low', 'Close', 'Volume']]
+    y = dados['Close']
+
+    # Normalize os dados para melhorar o treinamento da rede neural
+    X_normalized = (X - X.mean()) / X.std()
+    y_normalized = (y - y.mean()) / y.std()
+
+    # Converta os dados para arrays numpy
+    X_train = X_normalized.values
+    y_train = y_normalized.values
+
+    # Crie a arquitetura da rede neural
+    model = tf.keras.Sequential([
+        tf.keras.layers.Dense(64, activation='relu', input_shape=(5,)),
+        tf.keras.layers.Dense(1)
+    ])
+
+    # Compile o modelo com uma função de perda e otimizador
+    model.compile(loss='mse', optimizer='adam')
+
+    # Treine a rede neural
+    model.fit(X_train, y_train, epochs=100, batch_size=32)
+
+    return model
+
+# Restante do código do aplicativo...
+def fazer_previsao_rede_neural(modelo, dados):
+    # Utilize o modelo de rede neural treinado para fazer as previsões futuras
+    # Aqui você pode definir um período futuro para a previsão
+    X = dados[['Open', 'High', 'Low', 'Close', 'Volume']]
+    X_normalized = (X - X.mean()) / X.std()
+    X_test = X_normalized.values
+    previsao_normalized = modelo.predict(X_test)
+    previsao = previsao_normalized * dados['Close'].std() + dados['Close'].mean()
+    return previsao
+
+def atualizar_resultados(resultado):
+    # Exibir os resultados das análises na interface gráfica
+    resultado_label.config(text=f"Previsão Futura: {resultado}")
+
+def iniciar_analises():
+    # Coletar os dados históricos do ativo selecionado
+    ativo = ativo_entry.get()
+    data_inicio = data_inicio_entry.get()
+    data_fim = data_fim_entry.get()
+    dados = coletar_dados(ativo, data_inicio, data_fim)
+
+    # Treinar o modelo de regressão linear e de rede neural
+    modelo_linear = treinar_modelo(dados)
+    modelo_rede_neural = treinar_rede_neural(dados)
+
+    # Fazer as previsões futuras com base nos modelos treinados
+    previsao_linear = fazer_previsao(modelo_linear, dados)
+    previsao_rede_neural = fazer_previsao_rede_neural(modelo_rede_neural, dados)
+
+    # Atualizar a exibição dos resultados na interface gráfica
+    atualizar_resultados(previsao_rede_neural)
+
+# Restante do código do aplicativo...
+
+# Crie um rótulo para o campo de entrada do código do ativo
+ativo_label = tk.Label(root, text="Código do Ativo:")
+ativo_label.pack()
+
+# Crie um campo de entrada para o código do ativo
+ativo_entry = tk.Entry(root)
+ativo_entry.pack()
+
+# Crie um rótulo para o campo de entrada da data de início
+data_inicio_label = tk.Label(root, text="Data de Início (AAAA-MM-DD):")
+data_inicio_label.pack()
+
+# Crie um campo de entrada para a data de início
+data_inicio_entry = tk.Entry(root)
+data_inicio_entry.pack()
+
+# Crie um rótulo para o campo de entrada da data de fim
+data_fim_label = tk.Label(root, text="Data de Fim (AAAA-MM-DD):")
+data_fim_label.pack()
+
+# Crie um campo de entrada para a data de fim
+data_fim_entry = tk.Entry(root)
+data_fim_entry.pack()
+
+# Crie um botão para iniciar as análises futuras
+botao_analise = tk.Button(root, text="Iniciar Análises Futuras", command=iniciar_analises)
+botao_analise.pack()
+
+# Restante do código do aplicativo...
+
+
+
